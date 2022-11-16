@@ -4,12 +4,12 @@
 
 #ifndef SQLPARSER_DATA_H
 #define SQLPARSER_DATA_H
-#include "sql.tab.h"
 
 typedef enum predicate_arg_type predicate_arg_type;
 typedef struct predicate_arg predicate_arg;
 typedef struct predicate predicate;
 typedef struct select_stmt select_stmt;
+typedef struct statement statement;
 typedef struct literal literal;
 typedef enum literal_type littype;
 typedef struct columnref columnref;
@@ -58,14 +58,14 @@ struct select_stmt {
     predicate* predicate;
 };
 
-typedef struct {
+struct statement {
     int stmt_type;
     char* table_name;
     union {
         select_stmt *select_stmt;
         // other types of statements;
     } stmt;
-} statement;
+} ;
 
 //typedef struct {
 //    int stmt_type;
