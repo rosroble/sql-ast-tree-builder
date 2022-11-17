@@ -3,9 +3,102 @@
 //
 
 #include "data.h"
+#include "sql.tab.h"
+#include <stdlib.h>
 
-root* new_root(int stmt_type, char* table_name, statement stmt);
-statement* new_statement(int stmt_type);
-predicate* new_literal_predicate(char* column_name, int cmp_type);
-predicate* new_reference_predicate(char* column_name_left, char* column_name_right, int cmp_type);
-predicate* new_compound_predicate(predicate* left, predicate* right);
+predicate_arg new_predicate_arg(predicate_arg_type type, void* arg) {
+    predicate_arg predarg;
+    predarg.type = type;
+    predarg.arg.unknown = arg;
+    return predarg;
+}
+
+literal* new_num_literal(int num) {
+    literal* lit = malloc(sizeof(literal));
+    if (lit) {
+        lit->type = NUMBER;
+        lit->value.num = num;
+    }
+    return lit;
+}
+
+literal* new_str_literal(char* str) {
+    literal* lit = malloc(sizeof (literal));
+    if (lit) {
+        lit->type = STIRNG;
+        lit->value.string = str;
+    }
+    return lit;
+};
+
+columnref* new_column_ref(columnref* prev, char* column_name) {
+    columnref* cref = malloc(sizeof(columnref));
+    if (cref) {
+        cref->col_name = column_name;
+        cref->next = NULL;
+        if (prev) {
+            prev->next = cref;
+        }
+    }
+    return cref;
+}
+
+statement* new_basic_statement (char* table_name, int type) {
+    statement *basic = malloc(sizeof(statement));
+    if (basic) {
+        basic->table_name = table_name;
+        basic->stmt_type = SELECT;
+    }
+    return basic;
+}
+
+statement* new_select_statement(char* table_name, columnref* colref, predicate* pred) {
+    statement *basic = new_basic_statement(table_name, SELECT);
+    if (basic) {
+        basic->stmt.select_stmt = malloc(sizeof (select_stmt));
+        if (basic->stmt.select_stmt) {
+            basic->stmt.select_stmt->predicate = pred;
+            basic->stmt.select_stmt->columns = colref;
+        }
+    }
+    return basic;
+}
+
+predicate* new_literal_predicate(columnref* col, int cmp_type, literal* liter) {
+    predicate* pred = malloc(sizeof(predicate));
+    predicate_arg predarg = new_predicate_arg(LITERAL, liter);
+    if (pred) {
+        pred->type = TRIVIAL;
+        pred->column = col;
+        pred->cmp_type = cmp_type;
+        pred->arg = predarg;
+        pred->predicate_op = 0;
+    }
+    return pred;
+}
+
+predicate* new_reference_predicate(columnref* left, int cmp_type, columnref* right) {
+    predicate* pred = malloc(sizeof(predicate));
+    predicate_arg predarg = new_predicate_arg(REFERENCE, right);
+    if (pred) {
+        pred->type = TRIVIAL;
+        pred->column = left;
+        pred->cmp_type = cmp_type;
+        pred->arg = predarg;
+        pred->predicate_op = 0;
+    }
+    return pred;
+}
+
+predicate* new_compound_predicate(predicate* left, int predicate_op, predicate* right) {
+    predicate* pred = malloc(sizeof(predicate));
+    if (pred) {
+        pred->type = COMPOUND;
+        pred->column = NULL;
+        pred->cmp_type = 0;
+        pred->predicate_op = predicate_op;
+        pred->left = left;
+        pred->right = right;
+    }
+    return pred;
+}

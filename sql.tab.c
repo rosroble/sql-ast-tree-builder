@@ -461,7 +461,7 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  6
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   28
+#define YYLAST   23
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  23
@@ -568,7 +568,7 @@ static const yytype_int8 yypact[] =
 {
       -7,     2,    11,   -10,   -10,    -3,   -10,    15,    17,   -10,
      -10,     0,   -10,     2,    -4,   -10,    -6,   -10,     2,     2,
-       4,     3,   -10,   -10,    18,    16,   -10,    19,   -10
+       4,   -10,   -10,   -10,    18,    16,   -10,    13,   -10
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -584,7 +584,7 @@ static const yytype_int8 yydefact[] =
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -10,   -10,   -10,   -10,    -9,   -10,    -1,   -10
+     -10,   -10,   -10,   -10,   -10,    -9,    -1,   -10
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
@@ -600,14 +600,14 @@ static const yytype_int8 yytable[] =
 {
        5,     7,    17,     1,     7,     4,    12,     4,    23,    21,
       22,     6,     8,    24,    18,    19,    20,    13,     9,    25,
-      10,    27,    19,     7,     0,     0,     0,     0,    28
+      10,    27,    28,     7
 };
 
 static const yytype_int8 yycheck[] =
 {
        1,     7,     6,    10,     7,     3,     6,     3,     4,    18,
       19,     0,    15,     9,    18,    19,    22,    17,     3,    20,
-       3,     3,    19,     7,    -1,    -1,    -1,    -1,     9
+       3,     3,     9,     7
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -616,7 +616,7 @@ static const yytype_int8 yystos[] =
 {
        0,    10,    24,    25,     3,    29,     0,     7,    15,     3,
        3,    26,     6,    17,    27,    28,    29,     6,    18,    19,
-      22,    27,    27,     4,     9,    29,    30,     3,     9
+      22,    28,    28,     4,     9,    29,    30,     3,     9
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
@@ -1095,25 +1095,25 @@ yyreduce:
     {
   case 4: /* select_stmt: SELECT columnref FROM tableref SEMICOLON  */
 #line 51 "sql.y"
-                                                         {(yyval.sel_stmt) = new_select_statement((yyvsp[-1].name));}
+                                                         {(yyval.stmt) = new_select_statement((yyvsp[-1].name), (yyvsp[-3].colref), NULL);}
 #line 1100 "sql.tab.c"
     break;
 
   case 5: /* select_stmt: SELECT columnref FROM tableref WHERE predicate SEMICOLON  */
 #line 52 "sql.y"
-                                                                         {(yyval.sel_stmt) = new_select_statement((yyvsp[-3].name));}
+                                                                         {(yyval.stmt) = new_select_statement((yyvsp[-3].name), (yyvsp[-5].colref), (yyvsp[-1].predicate));}
 #line 1106 "sql.tab.c"
     break;
 
-  case 7: /* predicate: predicate AND predicate  */
+  case 7: /* predicate: predicate AND trivial_predicate  */
 #line 58 "sql.y"
-                                   { (yyval.predicate) = new_compound_predicate((yyvsp[-2].predicate), (yyvsp[-1].predicate_op), (yyvsp[0].predicate)); }
+                                           { (yyval.predicate) = new_compound_predicate((yyvsp[-2].predicate), (yyvsp[-1].predicate_op), (yyvsp[0].predicate)); }
 #line 1112 "sql.tab.c"
     break;
 
-  case 8: /* predicate: predicate OR predicate  */
+  case 8: /* predicate: predicate OR trivial_predicate  */
 #line 59 "sql.y"
-                               { (yyval.predicate) = new_compound_predicate((yyvsp[-2].predicate), (yyvsp[-1].predicate_op), (yyvsp[0].predicate)); }
+                                       { (yyval.predicate) = new_compound_predicate((yyvsp[-2].predicate), (yyvsp[-1].predicate_op), (yyvsp[0].predicate)); }
 #line 1118 "sql.tab.c"
     break;
 

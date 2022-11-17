@@ -20,7 +20,7 @@ int yyerror(char* s);
 %type <predicate_op> OR
 %type <literal> literal
 %type <colref> columnref
-%type <sel_stmt> select_stmt
+%type <stmt> select_stmt
 %type <predicate> trivial_predicate
 %type <predicate> predicate
 
@@ -34,7 +34,7 @@ int yyerror(char* s);
     int predicate_op;
     literal* literal;
     columnref* colref;
-    select_stmt* sel_stmt;
+    statement* stmt;
     predicate* predicate;
 }
 
@@ -48,15 +48,15 @@ stmt: /* empty */
 */
 ;
 
-select_stmt: 	SELECT columnref FROM tableref SEMICOLON {$$ = new_select_statement($4);}
-|		SELECT columnref FROM tableref WHERE predicate SEMICOLON {$$ = new_select_statement($4);}
+select_stmt: 	SELECT columnref FROM tableref SEMICOLON {$$ = new_select_statement($4, $2, NULL);}
+|		SELECT columnref FROM tableref WHERE predicate SEMICOLON {$$ = new_select_statement($4, $2, $6);}
 ;
 
 tableref: STRING
 ;
 
-predicate: predicate AND predicate { $$ = new_compound_predicate($1, $2, $3); }
-|	predicate OR predicate { $$ = new_compound_predicate($1, $2, $3); }
+predicate: predicate AND trivial_predicate { $$ = new_compound_predicate($1, $2, $3); }
+|	predicate OR trivial_predicate { $$ = new_compound_predicate($1, $2, $3); }
 |	trivial_predicate
 ;
 

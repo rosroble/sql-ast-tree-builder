@@ -90,7 +90,7 @@ union YYSTYPE
     int predicate_op;
     literal* literal;
     columnref* colref;
-    select_stmt* sel_stmt;
+    statement* stmt;
     predicate* predicate;
 
 #line 97 "sql.tab.h"
