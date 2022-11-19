@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void print_predicate(predicate* pred);
+
 
 predicate_arg new_predicate_arg(predicate_arg_type type, void* arg) {
     predicate_arg predarg;
