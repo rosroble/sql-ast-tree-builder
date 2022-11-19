@@ -24,8 +24,8 @@ int yyerror(char* s);
 %type <predicate> trivial_predicate
 %type <predicate> predicate
 
-%left AND
 %left OR
+%left AND
 
 %union {
     char name[20];
@@ -49,14 +49,14 @@ stmt: /* empty */
 ;
 
 select_stmt: 	SELECT columnref FROM tableref SEMICOLON {$$ = new_select_statement($4, $2, NULL);}
-|		SELECT columnref FROM tableref WHERE predicate SEMICOLON {$$ = new_select_statement($4, $2, $6);}
+|		SELECT columnref FROM tableref WHERE predicate SEMICOLON {$$ = new_select_statement($4, $2, $6); print_predicate($6); }
 ;
 
 tableref: STRING
 ;
 
-predicate: predicate AND trivial_predicate { $$ = new_compound_predicate($1, $2, $3); }
-|	predicate OR trivial_predicate { $$ = new_compound_predicate($1, $2, $3); }
+predicate: predicate AND predicate { $$ = new_compound_predicate($1, $2, $3); }
+|	predicate OR predicate { $$ = new_compound_predicate($1, $2, $3); }
 |	trivial_predicate
 ;
 
