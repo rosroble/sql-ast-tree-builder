@@ -9,7 +9,7 @@
 
 #define TAB_PRINTF(tabs, ...) do{ print_tabs(tabs), fprintf(stdout, __VA_ARGS__ ); } while(0)
 
-
+void print_predicate(predicate* pred);
 static int tabs = 0;
 
 void print_tabs(int amount) {
@@ -51,6 +51,7 @@ void print_literal(literal* lit) {
     }
     TAB_PRINTF(--tabs, "}\n");
 }
+
 
 void print_predicate_arg_literal(predicate_arg* arg) {
     TAB_PRINTF(++tabs, "type: literal, \n");
@@ -112,7 +113,10 @@ void print_compound_predicate(predicate* pred) {
 }
 
 void print_predicate(predicate* pred) {
-    if (pred == NULL) return;
+    if (pred == NULL)  {
+        printf("null\n");
+        return;
+    }
     switch (pred->type) {
         case TRIVIAL:
             print_trivial_predicate(pred);
@@ -122,8 +126,6 @@ void print_predicate(predicate* pred) {
             break;
     }
 }
-
-
 
 void print_columns(columnref* ref) {
     printf("[\n");
@@ -177,6 +179,38 @@ void print_insert_stmt(statement* stmt) {
     TAB_PRINTF(--tabs, "}\n");
 }
 
+void print_set_value(set_value* value) {
+    TAB_PRINTF(tabs, "{\n");
+    TAB_PRINTF(++tabs, "column: %s,\n", value->col->col_name);
+    TAB_PRINTF(tabs, "value: ");
+    print_literal(value->lit);
+    TAB_PRINTF(--tabs, "}");
+}
+
+void print_set_value_list(set_value_list* list) {
+    printf("[\n");
+    // print_tabs(++tabs);
+    while (list && list->next) {
+        print_set_value(list->setval);
+        list = list->next;
+        printf(",\n");
+    }
+    print_set_value(list->setval);
+    printf("\n");
+    TAB_PRINTF(tabs, "]\n");
+}
+
+void print_update_stmt(statement *stmt) {
+    TAB_PRINTF(tabs, "{\n");
+    TAB_PRINTF(++tabs, "type: update,\n");
+    TAB_PRINTF(tabs, "table: %s,\n", stmt->table_name);
+    TAB_PRINTF(tabs, "updated_values: ");
+    print_set_value_list(stmt->stmt.update_stmt->set_value_list);
+    TAB_PRINTF(tabs, "predicate: ");
+    print_predicate(stmt->stmt.update_stmt->predicate);
+    TAB_PRINTF(--tabs, "}\n");
+}
+
 void print_stmt(statement* stmt) {
     switch (stmt->stmt_type) {
         case SELECT:
@@ -186,7 +220,7 @@ void print_stmt(statement* stmt) {
             print_insert_stmt(stmt);
             break;
         case UPDATE:
-            // print_update_stmt();
+            print_update_stmt(stmt);
             break;
         case DELETE:
             // print_delete_stmt();
@@ -197,3 +231,5 @@ void print_stmt(statement* stmt) {
             break;
     }
 }
+
+

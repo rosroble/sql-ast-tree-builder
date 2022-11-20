@@ -80,6 +80,17 @@ statement* new_insert_statement(char* table_name, columnref* cols, literal_list*
     return basic;
 }
 
+statement* new_update_statement(char* table_name, set_value_list* sets, predicate* pred) {
+    statement* basic = new_basic_statement(table_name, UPDATE);
+    if (basic) {
+        basic->stmt.update_stmt = malloc(sizeof(update_stmt));
+        if (basic->stmt.update_stmt) {
+            basic->stmt.update_stmt->set_value_list = sets;
+            basic->stmt.update_stmt->predicate = pred;
+        }
+    }
+    return basic;
+}
 
 predicate* new_literal_predicate(columnref* col, int cmp_type, literal* liter) {
     predicate* pred = malloc(sizeof(predicate));
@@ -125,5 +136,25 @@ literal_list* new_literal_list(literal_list* prev, literal* literal) {
     llist->value = literal;
     llist->next = prev;
     return llist;
+}
+
+
+
+set_value* new_set_value(columnref* col, literal* literal) {
+    set_value* set_val = malloc(sizeof(set_value));
+    if (set_val) {
+        set_val->lit = literal;
+        set_val->col = col;
+    }
+    return set_val;
+}
+
+set_value_list* new_set_value_list(set_value_list* prev, set_value* val) {
+    set_value_list* list = malloc(sizeof(set_value_list));
+    if (list) {
+        list->setval = val;
+        list->next = prev;
+    }
+    return list;
 }
 
