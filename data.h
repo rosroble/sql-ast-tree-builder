@@ -108,6 +108,5 @@ predicate* new_reference_predicate(columnref* left, int cmp_type, columnref* rig
 predicate* new_compound_predicate(predicate* left, int predicate_op, predicate* right);
 
 
-void print_stmt(statement* stmt);
-void print_predicate(predicate* pred);
+
 #endif //SQLPARSER_DATA_H

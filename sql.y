@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include "data.h"
+#include "printer.h"
 extern int yylex();
 int yyerror(char* s);
 
