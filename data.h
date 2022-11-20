@@ -9,6 +9,7 @@ typedef enum predicate_arg_type predicate_arg_type;
 typedef enum predicate_type predicate_type;
 typedef struct predicate_arg predicate_arg;
 typedef struct predicate predicate;
+typedef struct join_stmt join_stmt;
 typedef struct select_stmt select_stmt;
 typedef struct insert_stmt insert_stmt;
 typedef struct update_stmt update_stmt;
@@ -73,9 +74,15 @@ struct predicate {
     predicate* right;
 };
 
+struct join_stmt {
+    char* join_on_table;
+    predicate* join_predicate;
+};
+
 struct select_stmt {
     columnref* columns;
     predicate* predicate;
+    join_stmt* join_stmt;
 };
 
 struct insert_stmt {
@@ -99,14 +106,14 @@ struct update_stmt {
 };
 
 struct statement {
-    int stmt_type;
-    char* table_name;
     union {
         select_stmt *select_stmt;
         insert_stmt *insert_stmt;
         update_stmt* update_stmt;
         // other types of statements;
     } stmt;
+    int stmt_type;
+    char* table_name;
 };
 
 //typedef struct {
@@ -120,13 +127,16 @@ struct statement {
 literal* new_num_literal(int num);
 literal* new_str_literal(char* str);
 literal_list* new_literal_list(literal_list* prev, literal* literal);
-columnref* new_column_ref(columnref* prev, char* column_name);
-statement* new_select_statement(char* table_name, columnref* colref, predicate* pred);
+columnref* new_column_ref(columnref* prev, char* column_name, char* table_name);
+statement* new_basic_select_statement(char* table_name, columnref* colref);
 statement* new_insert_statement(char* table_name, columnref* cols, literal_list* vals);
 statement* new_update_statement(char* table_name, set_value_list* sets, predicate* pred);
+statement* add_join_statement(statement* statement, join_stmt* join_stmt);
+statement* add_predicate_statement(statement* statement, predicate* predicate);
 predicate* new_literal_predicate(columnref* col, int cmp_type, literal* liter);
 predicate* new_reference_predicate(columnref* left, int cmp_type, columnref* right);
 predicate* new_compound_predicate(predicate* left, int predicate_op, predicate* right);
+join_stmt* new_join_stmt(char* join_on, predicate* predicate);
 set_value* new_set_value(columnref* col, literal* literal);
 set_value_list* new_set_value_list(set_value_list* prev, set_value* val);
 

@@ -8,7 +8,7 @@ int yyerror(char* s);
 %}
 
 
-%token STRING NUM OTHER SEMICOLON COMMA DOT QUOTE EOL LP RP SET EQ
+%token STRING NUM OTHER SEMICOLON COMMA DOT QUOTE EOL LP RP SET EQ ON JOIN
 %token SELECT INSERT UPDATE DELETE CREATE TABLE FROM INTO WHERE AND OR ALL VALUES
 %token CMP
 
@@ -22,10 +22,16 @@ int yyerror(char* s);
 %type <literal> literal
 %type <lit_list> value_list
 %type <colref> columnref
+%type <colref> short_columnref
+%type <colref> full_columnref
+%type <stmt> basic_select_stmt
+%type <stmt> select_predicate_stmt
+%type <stmt> select_join_stmt
 %type <stmt> select_stmt
 %type <stmt> insert_stmt
 %type <stmt> update_stmt
 %type <stmt> stmt
+%type <jstmt> join_stmt
 %type <svallist> set_value_list
 %type <sval> set_value
 %type <predicate> trivial_predicate
@@ -45,6 +51,7 @@ int yyerror(char* s);
     set_value_list* svallist;
     set_value* sval;
     statement* stmt;
+    join_stmt* jstmt;
     predicate* predicate;
 }
 
@@ -64,8 +71,23 @@ stmt: 	select_stmt
 */
 ;
 
-select_stmt: 	SELECT columnref FROM tableref {$$ = new_select_statement($4, $2, NULL);}
-|		SELECT columnref FROM tableref WHERE predicate {$$ = new_select_statement($4, $2, $6); }
+
+select_stmt: 	basic_select_stmt
+|		select_join_stmt
+|		select_predicate_stmt
+;
+
+select_predicate_stmt: 	basic_select_stmt WHERE predicate {$$ = add_predicate_statement($1, $3); }
+|			select_join_stmt WHERE predicate {$$ = add_predicate_statement($1, $3); }
+;
+
+select_join_stmt: basic_select_stmt JOIN join_stmt {$$ = add_join_statement($1, $3);}
+;
+
+basic_select_stmt: SELECT columnref FROM tableref {$$ = new_basic_select_statement($4, $2);}
+;
+
+join_stmt: 	tableref ON predicate {$$ = new_join_stmt($1, $3);}
 ;
 
 insert_stmt:	INSERT INTO tableref LP columnref RP VALUES LP value_list RP {$$ = new_insert_statement($3, $5, $9);}
@@ -94,9 +116,18 @@ trivial_predicate: 	columnref CMP literal { $$ = new_literal_predicate($1, $2, $
 |			columnref CMP columnref { $$ = new_reference_predicate($1, $2, $3); }
 ;
 
-columnref: 	STRING COMMA columnref { $$ = new_column_ref($3, $1); }
-|		STRING { $$ = new_column_ref(NULL, $1); }
+columnref: 	short_columnref COMMA columnref { $$ = $1; $1->next = $3; }
+|		full_columnref COMMA columnref { $$ = $1; $1->next = $3; }
+|		short_columnref
+|		full_columnref
 ;
+
+short_columnref: STRING { $$ = new_column_ref(NULL, $1, NULL); }
+;
+
+full_columnref: STRING DOT STRING { $$ = new_column_ref(NULL, $3, $1);}
+;
+
 
 value_list: literal { $$ = new_literal_list(NULL, $1); }
 |	value_list COMMA literal { $$ = new_literal_list($1, $3); }

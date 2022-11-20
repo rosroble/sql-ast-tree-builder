@@ -127,17 +127,25 @@ void print_predicate(predicate* pred) {
     }
 }
 
+void print_column(columnref* ref) {
+    TAB_PRINTF(++tabs, "{\n");
+    TAB_PRINTF(++tabs, "name: %s\n", ref->col_name);
+    TAB_PRINTF(tabs, "table: %s\n", ref->table_name ? ref->table_name : "null");
+    TAB_PRINTF(--tabs, "}");
+    tabs--;
+}
+
+
 void print_columns(columnref* ref) {
     printf("[\n");
-    print_tabs(++tabs);
     while (ref && ref->next) {
-        printf("%s, \n", ref->col_name);
-        print_tabs(tabs);
+        print_column(ref);
+        printf(",\n");
         ref = ref->next;
     }
-    printf("%s\n", ref->col_name);
-    print_tabs(--tabs);
-    printf("]\n");
+    print_column(ref);
+    printf("\n");
+    TAB_PRINTF(tabs, "]\n");
 }
 
 void print_values(literal_list* list) {
@@ -152,20 +160,30 @@ void print_values(literal_list* list) {
     TAB_PRINTF(tabs, "]\n");
 }
 
+void print_join_stmt(join_stmt* stmt) {
+    if (stmt == NULL) {
+        printf("null\n");
+        return;
+    }
+    printf("{\n");
+    TAB_PRINTF(++tabs, "join_on: %s\n", stmt->join_on_table);
+    TAB_PRINTF(tabs, "predicate: ");
+    print_predicate(stmt->join_predicate);
+    TAB_PRINTF(--tabs, "}\n");
+}
+
 void print_select_stmt(statement* stmt) {
     printf("{\n");
-    print_tabs(++tabs);
-    printf("type: select\n");
-    print_tabs(tabs);
-    printf("table: %s\n", stmt->table_name);
-    print_tabs(tabs);
-    printf("columns: ");
+    TAB_PRINTF(++tabs, "type: select\n");
+    TAB_PRINTF(tabs, "table: %s\n", stmt->table_name);
+    TAB_PRINTF(tabs, "columns: ");
     print_columns(stmt->stmt.select_stmt->columns);
-    print_tabs(tabs);
-    printf("predicate: ");
+    TAB_PRINTF(tabs, "predicate: ");
     print_predicate(stmt->stmt.select_stmt->predicate);
+    TAB_PRINTF(tabs, "join: ");
+    print_join_stmt(stmt->stmt.select_stmt->join_stmt);
     print_tabs(--tabs);
-    printf("}\n");
+    TAB_PRINTF(--tabs, "}\n");
 }
 
 void print_insert_stmt(statement* stmt) {

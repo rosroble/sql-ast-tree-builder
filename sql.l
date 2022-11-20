@@ -23,11 +23,13 @@ word ([a-zA-Z_][a-zA-Z0-9_]*)
 "update"    {return UPDATE;}
 "create"    {return CREATE;}
 "delete"    {return DELETE;}
+"on"        {return ON;}
 "from"      {return FROM;}
 "where"     {return WHERE;}
 "into"      {return INTO;}
 "values"    {return VALUES;}
 "set"       {return SET;}
+"join"      {return JOIN;}
 "and"       {yylval.predicate_op = 1; return AND;}
 "or"        {yylval.predicate_op = 2; return OR;}
 "="         {return EQ;}

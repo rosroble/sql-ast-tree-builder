@@ -36,11 +36,16 @@ literal* new_str_literal(char* str) {
     return lit;
 }
 
-columnref* new_column_ref(columnref* prev, char* column_name) {
+columnref* new_column_ref(columnref* prev, char* column_name, char* table_name) {
     columnref* cref = malloc(sizeof(columnref));
     if (cref) {
         cref->col_name = malloc(strlen(column_name) + 1);
         strcpy(cref->col_name, column_name);
+        cref->table_name = NULL;
+        if (table_name) {
+            cref->table_name = malloc(strlen(table_name) + 1);
+            strcpy(cref->table_name, table_name);
+        }
         cref->next = prev;
     }
     return cref;
@@ -56,13 +61,14 @@ statement* new_basic_statement (char* table_name, int type) {
     return basic;
 }
 
-statement* new_select_statement(char* table_name, columnref* colref, predicate* pred) {
+statement* new_basic_select_statement(char* table_name, columnref* colref) {
     statement *basic = new_basic_statement(table_name, SELECT);
     if (basic) {
         basic->stmt.select_stmt = malloc(sizeof (select_stmt));
         if (basic->stmt.select_stmt) {
-            basic->stmt.select_stmt->predicate = pred;
+            basic->stmt.select_stmt->predicate = NULL;
             basic->stmt.select_stmt->columns = colref;
+            basic->stmt.select_stmt->join_stmt = NULL;
         }
     }
     return basic;
@@ -157,4 +163,27 @@ set_value_list* new_set_value_list(set_value_list* prev, set_value* val) {
     }
     return list;
 }
+
+statement* add_join_statement(statement* stmt, join_stmt* join_stmt) {
+    if (stmt->stmt_type != SELECT) return stmt; // no-op
+    stmt->stmt.select_stmt->join_stmt = join_stmt;
+    return stmt;
+}
+
+statement* add_predicate_statement(statement* stmt, predicate* pred) {
+    if (stmt->stmt_type != SELECT) return stmt;
+    stmt->stmt.select_stmt->predicate = pred;
+    return stmt;
+}
+
+join_stmt* new_join_stmt(char* join_on, predicate* predicate) {
+    join_stmt* jstmt = malloc(sizeof(join_stmt));
+    if (jstmt) {
+        jstmt->join_on_table = malloc(strlen(join_on) + 1);
+        strcpy(jstmt->join_on_table, join_on);
+        jstmt->join_predicate = predicate;
+    }
+    return jstmt;
+}
+
 
