@@ -10,8 +10,10 @@ typedef enum predicate_type predicate_type;
 typedef struct predicate_arg predicate_arg;
 typedef struct predicate predicate;
 typedef struct select_stmt select_stmt;
+typedef struct insert_stmt insert_stmt;
 typedef struct statement statement;
 typedef struct literal literal;
+typedef struct literal_list literal_list;
 typedef enum literal_type littype;
 typedef struct columnref columnref;
 
@@ -42,6 +44,11 @@ struct literal {
     } value;
 };
 
+struct literal_list {
+    literal* value;
+    literal_list* next;
+};
+
 struct predicate_arg {
     predicate_arg_type type;
     union {
@@ -63,8 +70,13 @@ struct predicate {
 };
 
 struct select_stmt {
-    columnref* columns; // maybe linked list ??
+    columnref* columns;
     predicate* predicate;
+};
+
+struct insert_stmt {
+    columnref* columns;
+    literal_list* literals;
 };
 
 struct statement {
@@ -72,6 +84,7 @@ struct statement {
     char* table_name;
     union {
         select_stmt *select_stmt;
+        insert_stmt *insert_stmt;
         // other types of statements;
     } stmt;
 };
@@ -86,11 +99,14 @@ struct statement {
 // root* new_root(int stmt_type, char* table_name, statement stmt);
 literal* new_num_literal(int num);
 literal* new_str_literal(char* str);
+literal_list* new_literal_list(literal_list* prev, literal* literal);
 columnref* new_column_ref(columnref* prev, char* column_name);
 statement* new_select_statement(char* table_name, columnref* colref, predicate* pred);
+statement* new_insert_statement(char* table_name, columnref* cols, literal_list* vals);
 predicate* new_literal_predicate(columnref* col, int cmp_type, literal* liter);
 predicate* new_reference_predicate(columnref* left, int cmp_type, columnref* right);
 predicate* new_compound_predicate(predicate* left, int predicate_op, predicate* right);
+
 
 void print_stmt(statement* stmt);
 void print_predicate(predicate* pred);

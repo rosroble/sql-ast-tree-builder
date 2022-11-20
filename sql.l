@@ -19,6 +19,10 @@ word ([a-zA-Z0-9_]+)
 
 "*"         {return ALL;}
 "select"    {return SELECT;}
+"insert"    {return INSERT;}
+"update"    {return UPDATE;}
+"create"    {return CREATE;}
+"delete"    {return DELETE;}
 "from"      {return FROM;}
 "where"     {return WHERE;}
 "into"      {return INTO;}
@@ -31,6 +35,8 @@ word ([a-zA-Z0-9_]+)
 "="         {yylval.cmp = 4; return CMP;}
 ">="        {yylval.cmp = 5; return CMP;}
 "<="        {yylval.cmp = 6; return CMP;}
+"("         {return LP;}
+")"         {return RP;}
 "'"         {return QUOTE;}
 ";"         {return SEMICOLON;}
 "."         {return DOT;}
@@ -39,6 +45,7 @@ word ([a-zA-Z0-9_]+)
 {alpha}     {sscanf(yytext, "%s", yylval.name); return (STRING);}
 {numbers}   {yylval.number = atoi(yytext); return (NUM);}
 [ \t]   { /* ignore white space */ }
+\n          {return EOL; }
 .           {showError(); return (OTHER);}
 
 
