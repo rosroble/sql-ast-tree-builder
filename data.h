@@ -34,7 +34,7 @@ enum predicate_type {
 };
 
 enum literal_type {
-    STIRNG, NUMBER
+    LIT_STRING, LIT_INTEGER, LIT_FLOAT, LIT_BOOLEAN
 };
 
 struct columndef {
@@ -52,7 +52,9 @@ struct columnref {
 struct literal {
     littype type;
     union {
+        int boolean;
         int num;
+        double flt;
         char* string;
     } value;
 };
@@ -135,6 +137,8 @@ struct statement {
 
 literal* new_num_literal(int num);
 literal* new_str_literal(char* str);
+literal* new_float_literal(double flt);
+literal* new_bool_literal(int boolean);
 literal_list* new_literal_list(literal_list* prev, literal* literal);
 columnref* new_column_ref(columnref* prev, char* column_name, char* table_name);
 columndef* new_column_def(columndef* prev, char* column_name, int type);

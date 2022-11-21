@@ -13,10 +13,10 @@ void showError();
 %}
 
 
-numbers ([0-9])+
+integers ([0-9])+
+floats [+-]?([0-9]*[.])?[0-9]+
 alpha ([a-zA-Z]+)
 word ([a-zA-Z_][a-zA-Z0-9_]*)
-
 
 %%
 
@@ -48,6 +48,8 @@ word ([a-zA-Z_][a-zA-Z0-9_]*)
 "varchar"   {yylval.type = 2; return TYPE;}
 "boolean"   {yylval.type = 3; return TYPE;}
 "float"     {yylval.type = 4; return TYPE;}
+"true"      {yylval.boolean = 1; return BOOL;}
+"false"     {yylval.boolean = 0; return BOOL;}
 "("         {return LP;}
 ")"         {return RP;}
 "'"         {return QUOTE;}
@@ -55,8 +57,9 @@ word ([a-zA-Z_][a-zA-Z0-9_]*)
 "."         {return DOT;}
 ","         {return COMMA;}
 
-{word}     {sscanf(yytext, "%s", yylval.name); return (STRING);}
-{numbers}   {yylval.number = atoi(yytext); return (NUM);}
+{word}     {sscanf(yytext, "%s", yylval.name); return (STRING); }
+{integers}   {yylval.number = atoi(yytext); return (INTEGER); }
+{floats}     {yylval.flt = atof(yytext); return (FLOAT); }
 [ \t]   { /* ignore white space */ }
 [\n]    {}
 .           {showError(yytext); return (OTHER);}

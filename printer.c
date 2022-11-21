@@ -37,7 +37,7 @@ void predicate_op_to_str(int predicate_op, char str[4]) {
 }
 
 void col_type_to_str(int col_type, char str[10]) {
-    const char* type_to_str[10] = {"INTEGER", "VARCHAR", "BOOLEAN", "FLOAT"};
+    const char* type_to_str[10] = {"INTEGER", "VARCHAR", "LIT_BOOLEAN", "FLOAT"};
     if (col_type >= 1 && col_type <= 4) {
         strcpy(str, type_to_str[col_type - 1]);
     } else {
@@ -47,14 +47,20 @@ void col_type_to_str(int col_type, char str[10]) {
 
 void print_literal(literal* lit) {
     TAB_PRINTF(0, "{\n");
-    const char* literals_to_str[2] = {"STIRNG", "NUMBER"};
+    const char* literals_to_str[4] = {"STRING", "INTEGER", "FLOAT", "BOOLEAN"};
     TAB_PRINTF(++tabs, "type: %s,\n", literals_to_str[lit->type]);
     switch (lit->type) {
-        case STIRNG:
+        case LIT_STRING:
             TAB_PRINTF(tabs, "value: %s\n", lit->value.string);
             break;
-        case NUMBER:
+        case LIT_INTEGER:
             TAB_PRINTF(tabs, "value: %d\n", lit->value.num);
+            break;
+        case LIT_FLOAT:
+            TAB_PRINTF(tabs, "value: %f\n", lit->value.flt);
+            break;
+        case LIT_BOOLEAN:
+            TAB_PRINTF(tabs, "value: %s\n", lit->value.boolean ? "TRUE" : "FALSE");
         default:
             break;
     }

@@ -9,7 +9,8 @@ void yyerror(const char*);
 %}
 %define parse.error verbose
 
-%token STRING NUM OTHER SEMICOLON COMMA DOT QUOTE EOL LP RP SET EQ ON JOIN
+%token STRING INTEGER FLOAT BOOL
+%token OTHER SEMICOLON COMMA DOT QUOTE EOL LP RP SET EQ ON JOIN
 %token SELECT INSERT UPDATE DELETE CREATE DROP TABLE FROM INTO WHERE AND OR ALL VALUES
 %token CMP
 %token TYPE
@@ -17,8 +18,10 @@ void yyerror(const char*);
 
 %type <name> STRING
 %type <name> tableref
-%type <number> NUM
+%type <number> INTEGER
+%type <boolean> BOOL
 %type <number> CMP
+%type <flt> FLOAT
 %type <type> TYPE
 %type <predicate_op> AND
 %type <predicate_op> OR
@@ -51,9 +54,11 @@ void yyerror(const char*);
 %union {
     char name[20];
     int number;
+    int boolean;
     int cmp;
     int predicate_op;
     int type;
+    double flt;
     literal_list* lit_list;
     literal* literal;
     columnref* colref;
@@ -157,7 +162,9 @@ value_list: literal { $$ = new_literal_list(NULL, $1); }
 |	value_list COMMA literal { $$ = new_literal_list($1, $3); }
 ;
 
-literal:	NUM { $$ = new_num_literal($1); }
+literal:	INTEGER { $$ = new_num_literal($1); }
+|		FLOAT { $$ = new_float_literal($1); }
+|		BOOL { $$ = new_bool_literal($1); }
 |		QUOTE STRING QUOTE { $$ = new_str_literal($2); }
 ;
 %%

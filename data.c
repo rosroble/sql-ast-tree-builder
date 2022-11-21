@@ -40,7 +40,7 @@ predicate_arg new_predicate_arg(predicate_arg_type type, void* arg) {
 literal* new_num_literal(int num) {
     literal* lit = malloc(sizeof(literal));
     if (lit) {
-        lit->type = NUMBER;
+        lit->type = LIT_INTEGER;
         lit->value.num = num;
     }
     return lit;
@@ -49,10 +49,25 @@ literal* new_num_literal(int num) {
 literal* new_str_literal(char* str) {
     literal* lit = malloc(sizeof (literal));
     if (lit) {
-        lit->type = STIRNG;
+        lit->type = LIT_STRING;
         lit->value.string = malloc(strlen(str) + 1);
         strcpy(lit->value.string, str);
     }
+    return lit;
+}
+
+literal* new_float_literal(double flt) {
+    literal* lit = malloc(sizeof (literal));
+    if (lit) {
+        lit->type = LIT_FLOAT;
+        lit->value.flt = flt;
+    }
+    return lit;
+}
+
+literal* new_bool_literal(int boolean) {
+    literal* lit = new_num_literal(boolean);
+    lit->type = LIT_BOOLEAN;
     return lit;
 }
 
