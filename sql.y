@@ -136,6 +136,7 @@ tableref: STRING
 predicate: predicate AND predicate { $$ = new_compound_predicate($1, $2, $3); }
 |	predicate OR predicate { $$ = new_compound_predicate($1, $2, $3); }
 |	trivial_predicate
+|	LP predicate RP { $$ = $2; }
 ;
 
 trivial_predicate: 	columnref CMP literal { $$ = new_literal_predicate($1, $2, $3); }
