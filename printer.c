@@ -36,6 +36,15 @@ void predicate_op_to_str(int predicate_op, char str[4]) {
     }
 }
 
+void col_type_to_str(int col_type, char str[10]) {
+    const char* type_to_str[10] = {"INTEGER", "VARCHAR", "BOOLEAN", "FLOAT"};
+    if (col_type >= 1 && col_type <= 4) {
+        strcpy(str, type_to_str[col_type - 1]);
+    } else {
+        str[0] = '\0';
+    }
+}
+
 void print_literal(literal* lit) {
     TAB_PRINTF(0, "{\n");
     const char* literals_to_str[2] = {"STIRNG", "NUMBER"};
@@ -148,6 +157,28 @@ void print_columns(columnref* ref) {
     TAB_PRINTF(tabs, "]\n");
 }
 
+void print_column_def(columndef* def) {
+    char type_to_str[10];
+    col_type_to_str(def->type, type_to_str);
+    TAB_PRINTF(++tabs, "{\n");
+    TAB_PRINTF(++tabs, "name: %s\n", def->column_name);
+    TAB_PRINTF(tabs, "type: %s\n", type_to_str);
+    TAB_PRINTF(--tabs, "}");
+    tabs--;
+}
+
+void print_column_defs(columndef* defs) {
+    printf("[\n");
+    while (defs && defs->next) {
+        print_column_def(defs);
+        printf(",\n");
+        defs = defs->next;
+    }
+    print_column_def(defs);
+    printf("\n");
+    TAB_PRINTF(tabs, "]\n");
+}
+
 void print_values(literal_list* list) {
     printf("[\n");
     while (list && list->next) {
@@ -229,6 +260,22 @@ void print_update_stmt(statement *stmt) {
     TAB_PRINTF(--tabs, "}\n");
 }
 
+void print_create_stmt(statement *stmt) {
+    TAB_PRINTF(tabs, "{\n");
+    TAB_PRINTF(++tabs, "type: create,\n");
+    TAB_PRINTF(tabs, "table: %s,\n", stmt->table_name);
+    TAB_PRINTF(tabs, "definitions: ");
+    print_column_defs(stmt->stmt.create_stmt->defs);
+    TAB_PRINTF(--tabs, "}\n");
+}
+
+void print_drop_stmt(statement *stmt) {
+    TAB_PRINTF(tabs, "{\n");
+    TAB_PRINTF(++tabs, "type: drop,\n");
+    TAB_PRINTF(tabs, "table: %s,\n", stmt->table_name);
+    TAB_PRINTF(--tabs, "}\n");
+}
+
 void print_stmt(statement* stmt) {
     switch (stmt->stmt_type) {
         case SELECT:
@@ -241,10 +288,12 @@ void print_stmt(statement* stmt) {
             print_update_stmt(stmt);
             break;
         case DELETE:
-            // print_delete_stmt();
+            // print_delete_stmt(stmt);
+        case DROP:
+            print_drop_stmt(stmt);
             break;
         case CREATE:
-            // print_create_stmt();
+            print_create_stmt(stmt);
         default:
             break;
     }

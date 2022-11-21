@@ -23,6 +23,8 @@ word ([a-zA-Z_][a-zA-Z0-9_]*)
 "update"    {return UPDATE;}
 "create"    {return CREATE;}
 "delete"    {return DELETE;}
+"drop"      {return DROP;}
+"table"     {return TABLE;}
 "on"        {return ON;}
 "from"      {return FROM;}
 "where"     {return WHERE;}
@@ -39,6 +41,10 @@ word ([a-zA-Z_][a-zA-Z0-9_]*)
 "=="        {yylval.cmp = 4; return CMP;}
 ">="        {yylval.cmp = 5; return CMP;}
 "<="        {yylval.cmp = 6; return CMP;}
+"int"       {yylval.type = 1; return TYPE;}
+"varchar"   {yylval.type = 2; return TYPE;}
+"boolean"   {yylval.type = 3; return TYPE;}
+"float"     {yylval.type = 4; return TYPE;}
 "("         {return LP;}
 ")"         {return RP;}
 "'"         {return QUOTE;}
@@ -49,7 +55,7 @@ word ([a-zA-Z_][a-zA-Z0-9_]*)
 {word}     {sscanf(yytext, "%s", yylval.name); return (STRING);}
 {numbers}   {yylval.number = atoi(yytext); return (NUM);}
 [ \t]   { /* ignore white space */ }
-\n          {return EOL; }
+[\n]    {}
 .           {showError(); return (OTHER);}
 
 

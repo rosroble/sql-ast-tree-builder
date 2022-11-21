@@ -8,7 +8,27 @@
 #include <string.h>
 
 
+int reverse_cmp(int cmp) {
+    switch (cmp) {
+        case 1:
+            return 2;
+        case 2:
+            return 1;
+        case 3:
+        case 4:
+            return cmp;
+        case 5:
+            return 6;
+        case 6:
+            return 5;
+        default:
+            return -1;
+    }
+}
 
+char* alloc_and_copy_str(char* src) {
+    return strcpy(malloc(strlen(src) + 1), src);
+}
 
 predicate_arg new_predicate_arg(predicate_arg_type type, void* arg) {
     predicate_arg predarg;
@@ -49,6 +69,19 @@ columnref* new_column_ref(columnref* prev, char* column_name, char* table_name) 
         cref->next = prev;
     }
     return cref;
+}
+
+columndef* new_column_def(columndef* prev, char* column_name, int type) {
+    columndef* def = malloc(sizeof(columndef));
+    if (def) {
+        def->next = NULL;
+        def->column_name = alloc_and_copy_str(column_name);
+        def->type = type;
+        if (prev) {
+            def->next = prev;
+        }
+    }
+    return def;
 }
 
 statement* new_basic_statement (char* table_name, int type) {
@@ -95,6 +128,22 @@ statement* new_update_statement(char* table_name, set_value_list* sets, predicat
             basic->stmt.update_stmt->predicate = pred;
         }
     }
+    return basic;
+}
+
+statement* new_create_statement(char* table_name, columndef* defs) {
+    statement* basic = new_basic_statement(table_name, CREATE);
+    if (basic) {
+        basic->stmt.create_stmt = malloc(sizeof (create_stmt));
+        if (basic->stmt.create_stmt) {
+            basic->stmt.create_stmt->defs = defs;
+        }
+    }
+    return basic;
+}
+
+statement* new_drop_statement(char* table_name) {
+    statement* basic = new_basic_statement(table_name, DROP);
     return basic;
 }
 

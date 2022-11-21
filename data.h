@@ -13,6 +13,7 @@ typedef struct join_stmt join_stmt;
 typedef struct select_stmt select_stmt;
 typedef struct insert_stmt insert_stmt;
 typedef struct update_stmt update_stmt;
+typedef struct create_stmt create_stmt;
 typedef struct statement statement;
 typedef struct set_value set_value;
 typedef struct set_value_list set_value_list;
@@ -20,6 +21,7 @@ typedef struct literal literal;
 typedef struct literal_list literal_list;
 typedef enum literal_type littype;
 typedef struct columnref columnref;
+typedef struct columndef columndef;
 
 
 enum predicate_arg_type {
@@ -34,6 +36,11 @@ enum literal_type {
     STIRNG, NUMBER
 };
 
+struct columndef {
+    char* column_name;
+    int type;
+    columndef* next;
+};
 
 struct columnref {
     char* table_name;
@@ -90,6 +97,10 @@ struct insert_stmt {
     literal_list* literals;
 };
 
+struct create_stmt {
+    columndef* defs;
+};
+
 struct set_value {
     columnref* col;
     literal* lit;
@@ -109,7 +120,8 @@ struct statement {
     union {
         select_stmt *select_stmt;
         insert_stmt *insert_stmt;
-        update_stmt* update_stmt;
+        update_stmt *update_stmt;
+        create_stmt *create_stmt;
         // other types of statements;
     } stmt;
     int stmt_type;
@@ -128,9 +140,12 @@ literal* new_num_literal(int num);
 literal* new_str_literal(char* str);
 literal_list* new_literal_list(literal_list* prev, literal* literal);
 columnref* new_column_ref(columnref* prev, char* column_name, char* table_name);
+columndef* new_column_def(columndef* prev, char* column_name, int type);
 statement* new_basic_select_statement(char* table_name, columnref* colref);
 statement* new_insert_statement(char* table_name, columnref* cols, literal_list* vals);
 statement* new_update_statement(char* table_name, set_value_list* sets, predicate* pred);
+statement* new_create_statement(char* table_name, columndef* defs);
+statement* new_drop_statement(char* table_name);
 statement* add_join_statement(statement* statement, join_stmt* join_stmt);
 statement* add_predicate_statement(statement* statement, predicate* predicate);
 predicate* new_literal_predicate(columnref* col, int cmp_type, literal* liter);
@@ -139,6 +154,8 @@ predicate* new_compound_predicate(predicate* left, int predicate_op, predicate* 
 join_stmt* new_join_stmt(char* join_on, predicate* predicate);
 set_value* new_set_value(columnref* col, literal* literal);
 set_value_list* new_set_value_list(set_value_list* prev, set_value* val);
+
+int reverse_cmp(int cmp);
 
 
 #endif //SQLPARSER_DATA_H
