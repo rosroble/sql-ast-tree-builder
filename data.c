@@ -142,6 +142,17 @@ statement* new_create_statement(char* table_name, columndef* defs) {
     return basic;
 }
 
+statement* new_delete_statement(char* table_name, predicate* pred) {
+    statement* basic = new_basic_statement(table_name, DELETE);
+    if (basic) {
+        basic->stmt.delete_stmt = malloc(sizeof(delete_stmt));
+        if (basic->stmt.delete_stmt) {
+            basic->stmt.delete_stmt->predicate = pred;
+        }
+    }
+    return basic;
+}
+
 statement* new_drop_statement(char* table_name) {
     statement* basic = new_basic_statement(table_name, DROP);
     return basic;

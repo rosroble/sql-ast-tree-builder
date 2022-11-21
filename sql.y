@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include "data.h"
 #include "printer.h"
+#define YYERROR_VERBOSE 1
 extern int yylex();
-int yyerror(char* s);
-
+extern int yylineno;
+void yyerror(const char*);
 %}
-
+%define parse.error verbose
 
 %token STRING NUM OTHER SEMICOLON COMMA DOT QUOTE EOL LP RP SET EQ ON JOIN
 %token SELECT INSERT UPDATE DELETE CREATE DROP TABLE FROM INTO WHERE AND OR ALL VALUES
@@ -35,6 +36,7 @@ int yyerror(char* s);
 %type <stmt> insert_stmt
 %type <stmt> update_stmt
 %type <stmt> create_stmt
+%type <stmt> delete_stmt
 %type <stmt> drop_stmt
 %type <stmt> stmt
 %type <jstmt> join_stmt
@@ -73,9 +75,7 @@ stmt: 	select_stmt
 |	update_stmt
 |	create_stmt
 |	drop_stmt
-/*
 |	delete_stmt
-*/
 ;
 
 
@@ -103,6 +103,16 @@ insert_stmt:	INSERT INTO tableref LP columnref RP VALUES LP value_list RP {$$ = 
 update_stmt:	UPDATE tableref SET set_value_list { $$ = new_update_statement($2, $4, NULL); }
 |		UPDATE tableref SET set_value_list WHERE predicate {$$ = new_update_statement($2, $4, $6); }
 ;
+
+create_stmt: CREATE TABLE tableref LP column_defs RP { $$ = new_create_statement($3, $5); }
+;
+
+drop_stmt: DROP TABLE tableref { $$ = new_drop_statement($3); }
+;
+
+delete_stmt: DELETE FROM tableref WHERE predicate { $$ = new_delete_statement($3, $5); }
+;
+
 
 set_value_list:	set_value {$$ = new_set_value_list(NULL, $1); }
 |		set_value COMMA set_value_list {$$ = new_set_value_list($3, $1); }
@@ -136,19 +146,12 @@ short_columnref: STRING { $$ = new_column_ref(NULL, $1, NULL); }
 full_columnref: STRING DOT STRING { $$ = new_column_ref(NULL, $3, $1);}
 ;
 
-create_stmt: CREATE TABLE tableref LP column_defs RP { $$ = new_create_statement($3, $5); }
-;
-
-drop_stmt: DROP TABLE tableref { $$ = new_drop_statement($3); }
-;
-
 column_defs: 	column_def COMMA column_defs { $$ = $1; $1->next = $3; }
 |		column_def
 ;
 
 column_def: STRING TYPE { $$ = new_column_def(NULL, $1, $2); }
 ;
-
 
 value_list: literal { $$ = new_literal_list(NULL, $1); }
 |	value_list COMMA literal { $$ = new_literal_list($1, $3); }
@@ -159,12 +162,9 @@ literal:	NUM { $$ = new_num_literal($1); }
 ;
 %%
 
-
-
-int yyerror(char* s) {
-	printf("Syntax error line %s\n", s);
-	return 0;
-}
+void yyerror (char const *s) {
+   fprintf (stderr, "%s on line number %d", s, yylineno);
+ }
 
 int main() {
 	yyparse();

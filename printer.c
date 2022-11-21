@@ -276,6 +276,15 @@ void print_drop_stmt(statement *stmt) {
     TAB_PRINTF(--tabs, "}\n");
 }
 
+void print_delete_stmt(statement *stmt) {
+    TAB_PRINTF(tabs, "{\n");
+    TAB_PRINTF(++tabs, "type: delete,\n");
+    TAB_PRINTF(tabs, "from: %s,\n", stmt->table_name);
+    TAB_PRINTF(tabs, "predicate: ");
+    print_predicate(stmt->stmt.delete_stmt->predicate);
+    TAB_PRINTF(--tabs, "}\n");
+}
+
 void print_stmt(statement* stmt) {
     switch (stmt->stmt_type) {
         case SELECT:
@@ -288,7 +297,8 @@ void print_stmt(statement* stmt) {
             print_update_stmt(stmt);
             break;
         case DELETE:
-            // print_delete_stmt(stmt);
+             print_delete_stmt(stmt);
+             break;
         case DROP:
             print_drop_stmt(stmt);
             break;

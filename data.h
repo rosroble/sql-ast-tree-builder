@@ -14,6 +14,7 @@ typedef struct select_stmt select_stmt;
 typedef struct insert_stmt insert_stmt;
 typedef struct update_stmt update_stmt;
 typedef struct create_stmt create_stmt;
+typedef struct delete_stmt delete_stmt;
 typedef struct statement statement;
 typedef struct set_value set_value;
 typedef struct set_value_list set_value_list;
@@ -116,26 +117,22 @@ struct update_stmt {
     predicate* predicate;
 };
 
+struct delete_stmt {
+    predicate* predicate;
+};
+
 struct statement {
     union {
         select_stmt *select_stmt;
         insert_stmt *insert_stmt;
         update_stmt *update_stmt;
         create_stmt *create_stmt;
-        // other types of statements;
+        delete_stmt *delete_stmt;
     } stmt;
     int stmt_type;
     char* table_name;
 };
 
-//typedef struct {
-//    int stmt_type;
-//    char* table_name;
-//    statement stmt;
-//} root;
-
-
-// root* new_root(int stmt_type, char* table_name, statement stmt);
 literal* new_num_literal(int num);
 literal* new_str_literal(char* str);
 literal_list* new_literal_list(literal_list* prev, literal* literal);
@@ -146,6 +143,7 @@ statement* new_insert_statement(char* table_name, columnref* cols, literal_list*
 statement* new_update_statement(char* table_name, set_value_list* sets, predicate* pred);
 statement* new_create_statement(char* table_name, columndef* defs);
 statement* new_drop_statement(char* table_name);
+statement* new_delete_statement(char* table_name, predicate* pred);
 statement* add_join_statement(statement* statement, join_stmt* join_stmt);
 statement* add_predicate_statement(statement* statement, predicate* predicate);
 predicate* new_literal_predicate(columnref* col, int cmp_type, literal* liter);

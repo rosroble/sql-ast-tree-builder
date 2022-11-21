@@ -1,5 +1,7 @@
 %option noyywrap
 %option caseless
+%option yylineno
+
 
 %{
 #include <stdio.h>
@@ -7,6 +9,7 @@
 #include "data.h"
 #include "sql.tab.h"
 void showError();
+#define YYERROR_VERBOSE 1
 %}
 
 
@@ -56,12 +59,12 @@ word ([a-zA-Z_][a-zA-Z0-9_]*)
 {numbers}   {yylval.number = atoi(yytext); return (NUM);}
 [ \t]   { /* ignore white space */ }
 [\n]    {}
-.           {showError(); return (OTHER);}
+.           {showError(yytext); return (OTHER);}
 
 
 %%
 
 
-void showError() {
-    printf("Other input");
+void showError(char* token) {
+    printf("Unknown token: %s\n", token);
 }
