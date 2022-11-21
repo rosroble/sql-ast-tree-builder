@@ -224,7 +224,6 @@ void print_select_stmt(statement* stmt) {
     print_predicate(stmt->stmt.select_stmt->predicate);
     TAB_PRINTF(tabs, "join: ");
     print_join_stmt(stmt->stmt.select_stmt->join_stmt);
-    print_tabs(--tabs);
     TAB_PRINTF(--tabs, "}\n");
 }
 
@@ -297,6 +296,7 @@ void print_delete_stmt(statement *stmt) {
 }
 
 void print_stmt(statement* stmt) {
+    printf("\n");
     switch (stmt->stmt_type) {
         case SELECT:
             print_select_stmt(stmt);
