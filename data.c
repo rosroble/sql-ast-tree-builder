@@ -177,7 +177,7 @@ predicate* new_literal_predicate(columnref* col, int cmp_type, literal* liter) {
     predicate* pred = malloc(sizeof(predicate));
     predicate_arg predarg = new_predicate_arg(LITERAL, liter);
     if (pred) {
-        pred->type = TRIVIAL;
+        pred->type = COMPARISON;
         pred->column = col;
         pred->cmp_type = cmp_type;
         pred->arg = predarg;
@@ -190,7 +190,7 @@ predicate* new_reference_predicate(columnref* left, int cmp_type, columnref* rig
     predicate* pred = malloc(sizeof(predicate));
     predicate_arg predarg = new_predicate_arg(REFERENCE, right);
     if (pred) {
-        pred->type = TRIVIAL;
+        pred->type = COMPARISON;
         pred->column = left;
         pred->cmp_type = cmp_type;
         pred->arg = predarg;
@@ -208,6 +208,19 @@ predicate* new_compound_predicate(predicate* left, int predicate_op, predicate* 
         pred->predicate_op = predicate_op;
         pred->left = left;
         pred->right = right;
+    }
+    return pred;
+}
+
+predicate* new_contains_predicate(columnref* col, char* str) {
+    predicate* pred = malloc(sizeof(predicate));
+    predicate_arg arg = new_predicate_arg(LITERAL, new_str_literal(str));
+    if (pred) {
+        pred->type = STR_MATCH;
+        pred->column = col;
+        pred->predicate_op = 0;
+        pred->cmp_type = 0;
+        pred->arg = arg;
     }
     return pred;
 }

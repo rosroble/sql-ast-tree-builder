@@ -97,20 +97,22 @@ void print_trivial_predicate(predicate* pred) {
     char cmp_type_str[3];
     cmp_type_to_str(pred->cmp_type, cmp_type_str);
     printf("{\n");
-    print_tabs(++tabs);
-    printf("type: trivial,\n");
-    print_tabs(tabs);
-    printf("column: %s,\n", pred->column->col_name);
-    print_tabs(tabs);
-    printf("cmp_type: %s,\n", cmp_type_str);
-    print_tabs(tabs);
-    printf("predicate_arg: ");
+    TAB_PRINTF(++tabs, "type: trivial,\n");
+    TAB_PRINTF(tabs, "column: %s,\n", pred->column->col_name);
+    TAB_PRINTF(tabs, "cmp_type: %s,\n", cmp_type_str);
+    TAB_PRINTF(tabs, "predicate_arg: ");
     print_predicate_arg(&pred->arg);
-//    printf("type: trivial, column: %s, cmp_type: %s, predicate_arg: ",
-//           pred->column->col_name,
-//           cmp_type_str);
-    print_tabs(--tabs);
-    printf("}\n");
+    TAB_PRINTF(--tabs, "}\n");
+}
+
+void print_contains_predicate(predicate* pred) {
+    if (pred == NULL) return;
+    printf("{\n");
+    TAB_PRINTF(++tabs, "type: string_match,\n");
+    TAB_PRINTF(tabs, "column: %s,\n", pred->column->col_name);
+    TAB_PRINTF(tabs, "searched_str: ");
+    print_predicate_arg(&pred->arg);
+    TAB_PRINTF(--tabs, "}\n");
 }
 
 void print_compound_predicate(predicate* pred) {
@@ -133,7 +135,10 @@ void print_predicate(predicate* pred) {
         return;
     }
     switch (pred->type) {
-        case TRIVIAL:
+        case STR_MATCH:
+            print_contains_predicate(pred);
+            break;
+        case COMPARISON:
             print_trivial_predicate(pred);
             break;
         case COMPOUND:

@@ -30,7 +30,7 @@ enum predicate_arg_type {
 };
 
 enum predicate_type {
-    TRIVIAL, COMPOUND
+    COMPARISON, STR_MATCH, COMPOUND
 };
 
 enum literal_type {
@@ -153,6 +153,7 @@ statement* add_predicate_statement(statement* statement, predicate* predicate);
 predicate* new_literal_predicate(columnref* col, int cmp_type, literal* liter);
 predicate* new_reference_predicate(columnref* left, int cmp_type, columnref* right);
 predicate* new_compound_predicate(predicate* left, int predicate_op, predicate* right);
+predicate* new_contains_predicate(columnref* col, char* str);
 join_stmt* new_join_stmt(char* join_on, predicate* predicate);
 set_value* new_set_value(columnref* col, literal* literal);
 set_value_list* new_set_value_list(set_value_list* prev, set_value* val);

@@ -38,6 +38,7 @@ word ([a-zA-Z_][a-zA-Z0-9_]*)
 "and"       {yylval.predicate_op = 1; return AND;}
 "or"        {yylval.predicate_op = 2; return OR;}
 "="         {return EQ;}
+"~"         {return CONTAINS;}
 ">"         {yylval.cmp = 1; return CMP;}
 "<"         {yylval.cmp = 2; return CMP;}
 "!="        {yylval.cmp = 3; return CMP;}

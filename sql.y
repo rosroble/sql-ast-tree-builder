@@ -12,7 +12,7 @@ void yyerror(const char*);
 %token STRING INTEGER FLOAT BOOL
 %token OTHER SEMICOLON COMMA DOT QUOTE EOL LP RP SET EQ ON JOIN
 %token SELECT INSERT UPDATE DELETE CREATE DROP TABLE FROM INTO WHERE AND OR ALL VALUES
-%token CMP
+%token CMP CONTAINS
 %token TYPE
 
 
@@ -21,6 +21,7 @@ void yyerror(const char*);
 %type <number> INTEGER
 %type <boolean> BOOL
 %type <number> CMP
+%type <number> CONTAINS
 %type <flt> FLOAT
 %type <type> TYPE
 %type <predicate_op> AND
@@ -137,6 +138,7 @@ predicate: predicate AND predicate { $$ = new_compound_predicate($1, $2, $3); }
 trivial_predicate: 	columnref CMP literal { $$ = new_literal_predicate($1, $2, $3); }
 |			literal CMP columnref { $$ = new_literal_predicate($3, reverse_cmp($2), $1); }
 |			columnref CMP columnref { $$ = new_reference_predicate($1, $2, $3); }
+|			columnref CONTAINS QUOTE STRING QUOTE { $$ = new_contains_predicate($1, $4); }
 ;
 
 columnref: 	short_columnref COMMA columnref { $$ = $1; $1->next = $3; }
