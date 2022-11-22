@@ -37,7 +37,7 @@ void predicate_op_to_str(int predicate_op, char str[4]) {
 }
 
 void col_type_to_str(int col_type, char str[10]) {
-    const char* type_to_str[10] = {"INTEGER", "VARCHAR", "LIT_BOOLEAN", "FLOAT"};
+    const char* type_to_str[10] = {"INTEGER", "VARCHAR", "BOOLEAN", "FLOAT"};
     if (col_type >= 1 && col_type <= 4) {
         strcpy(str, type_to_str[col_type - 1]);
     } else {
@@ -193,6 +193,7 @@ void print_column_defs(columndef* defs) {
 void print_values(literal_list* list) {
     printf("[\n");
     while (list && list->next) {
+        print_tabs(tabs);
         print_literal(list->value);
         printf(",\n");
         list = list->next;

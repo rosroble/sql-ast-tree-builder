@@ -159,6 +159,6 @@ set_value* new_set_value(columnref* col, literal* literal);
 set_value_list* new_set_value_list(set_value_list* prev, set_value* val);
 
 int reverse_cmp(int cmp);
-
+void free_statement(statement* stmt);
 
 #endif //SQLPARSER_DATA_H

@@ -445,7 +445,7 @@ columnref* new_column_ref(columnref* prev, char* column_name, char* table_name) 
   }
   ```
 
-- CREATE TABLE (error on bool)
+- CREATE TABLE
 
   ```
   stmt >  CREATE TABLE tablename (

@@ -274,4 +274,138 @@ join_stmt* new_join_stmt(char* join_on, predicate* predicate) {
     return jstmt;
 }
 
+void free_column_ref(columnref* ref) {
+    if (ref == NULL) return;
+    columnref* t = ref;
+    while (ref) {
+        free(ref->table_name);
+        free(ref->col_name);
+        ref = t->next;
+        free(t);
+        t = ref;
+    }
+}
+
+void free_predicate(predicate* pred) {
+    if (pred == NULL) return;
+    if (pred->type == COMPOUND) {
+        free_predicate(pred->left);
+        free_predicate(pred->right);
+    }
+    free_column_ref(pred->column);
+    free(pred);
+}
+
+void free_join(join_stmt* stmt) {
+    if (stmt == NULL) return;
+    free(stmt->join_on_table);
+    free_predicate(stmt->join_predicate);
+}
+
+void free_select(select_stmt* stmt) {
+    if (stmt == NULL) return;
+    free_column_ref(stmt->columns);
+    free_predicate(stmt->predicate);
+    free_join(stmt->join_stmt);
+    free(stmt);
+}
+
+void free_literal(literal* literal) {
+    if (literal == NULL) return;
+    if (literal->type == LIT_STRING) {
+        free(literal->value.string);
+    }
+    free(literal);
+}
+
+void free_literal_list(literal_list* list) {
+    if (list == NULL) return;
+    literal_list* t = list;
+    while (list) {
+        free_literal(list->value);
+        list = t->next;
+        free(t);
+        t = list;
+    }
+}
+
+void free_set_value(set_value* val) {
+    if (val == NULL) return;
+    free_column_ref(val->col);
+    free_literal(val->lit);
+    free(val);
+}
+
+void free_set_value_list(set_value_list* list) {
+    if (list == NULL) return;
+    set_value_list* t = list;
+    while (list) {
+        free_set_value(list->setval);
+        list = t->next;
+        free(t);
+        t = list;
+    }
+}
+
+void free_insert(insert_stmt* stmt) {
+    if (stmt == NULL) return;
+    free_column_ref(stmt->columns);
+    free_literal_list(stmt->literals);
+    free(stmt);
+}
+
+void free_update(update_stmt* stmt) {
+    if (stmt == NULL) return;
+    free_set_value_list(stmt->set_value_list);
+    free_predicate(stmt->predicate);
+    free(stmt);
+}
+
+void free_delete(delete_stmt* stmt) {
+    if (stmt == NULL) return;
+    free_predicate(stmt->predicate);
+    free(stmt);
+}
+
+void free_column_def(columndef* def) {
+    if (def == NULL) return;
+    columndef* t = def;
+    while (def) {
+        free(def->column_name);
+        def = t->next;
+        free(t);
+        t = def;
+    }
+}
+
+void free_create(create_stmt* stmt) {
+    if (stmt == NULL) return;
+    free_column_def(stmt->defs);
+    free(stmt);
+}
+
+void free_statement(statement* stmt) {
+    if (stmt == NULL) return;
+    free(stmt->table_name);
+    switch (stmt->stmt_type) {
+        case SELECT:
+            free_select(stmt->stmt.select_stmt);
+            break;
+        case INSERT:
+            free_insert(stmt->stmt.insert_stmt);
+            break;
+        case UPDATE:
+            free_update(stmt->stmt.update_stmt);
+            break;
+        case DELETE:
+            free_delete(stmt->stmt.delete_stmt);
+            break;
+        case CREATE:
+            free_create(stmt->stmt.create_stmt);
+        default:
+            break;
+    }
+    free(stmt);
+}
+
 

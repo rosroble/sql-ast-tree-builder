@@ -76,7 +76,7 @@ void yyerror(const char*);
 
 
 input:
-|	input stmt SEMICOLON {print_stmt($2); printf("stmt > ");}
+|	input stmt SEMICOLON {print_stmt($2); free_statement($2); printf("stmt > ");}
 ;
 
 stmt: 	select_stmt
