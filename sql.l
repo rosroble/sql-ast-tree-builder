@@ -13,7 +13,7 @@ void showError();
 %}
 
 
-integers ([0-9])+
+integers ([-+]?[0-9])+
 floats [+-]?([0-9]*[.])?[0-9]+
 alpha ([a-zA-Z]+)
 word ([a-zA-Z_][a-zA-Z0-9_]*)
