@@ -274,6 +274,14 @@ join_stmt* new_join_stmt(char* join_on, predicate* predicate) {
     return jstmt;
 }
 
+void free_literal(literal* literal) {
+    if (literal == NULL) return;
+    if (literal->type == LIT_STRING) {
+        free(literal->value.string);
+    }
+    free(literal);
+}
+
 void free_column_ref(columnref* ref) {
     if (ref == NULL) return;
     columnref* t = ref;
@@ -288,11 +296,18 @@ void free_column_ref(columnref* ref) {
 
 void free_predicate(predicate* pred) {
     if (pred == NULL) return;
-    if (pred->type == COMPOUND) {
+    if (pred->type != COMPOUND) {
+        free_column_ref(pred->column);
+        if (pred->arg.type == LITERAL) {
+            free_literal(pred->arg.arg.literal);
+        }
+        if (pred->arg.type == REFERENCE) {
+            free_column_ref(pred->arg.arg.ref);
+        }
+    } else {
         free_predicate(pred->left);
         free_predicate(pred->right);
     }
-    free_column_ref(pred->column);
     free(pred);
 }
 
@@ -300,6 +315,7 @@ void free_join(join_stmt* stmt) {
     if (stmt == NULL) return;
     free(stmt->join_on_table);
     free_predicate(stmt->join_predicate);
+    free(stmt);
 }
 
 void free_select(select_stmt* stmt) {
@@ -310,13 +326,7 @@ void free_select(select_stmt* stmt) {
     free(stmt);
 }
 
-void free_literal(literal* literal) {
-    if (literal == NULL) return;
-    if (literal->type == LIT_STRING) {
-        free(literal->value.string);
-    }
-    free(literal);
-}
+
 
 void free_literal_list(literal_list* list) {
     if (list == NULL) return;

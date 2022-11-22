@@ -1,5 +1,13 @@
 # Лабораторная работа № 2
 
+## Сборка
+
+Программа тестировалась в окружении Flex 2.5.4, Bison 3.8.2, gcc 11.3.0
+```shell
+make
+```
+порождает исполняемый файл *sql*
+
 ## Цель задания
 
 Разработать модуль, осуществляющий синтаксический анализ языка запросов к базе данных с построением синтаксического дерева разобранного запроса.
@@ -265,6 +273,11 @@ columnref* new_column_ref(columnref* prev, char* column_name, char* table_name) 
 
 Конечным результатом является исполняемый файл ***sql***.
 
+Для проверки памяти используется Valgrind:
+```
+valgrind --tool=memcheck --gen-suppressions=all --leak-check=full --show-leak-kinds=all --leak-resolution=med --track-origins=yes --vgdb=no ./sql
+```
+
 Примеры работы программы:
 - Базовый SELECT без предиката и сопряжения таблиц.
   ```
@@ -286,8 +299,10 @@ columnref* new_column_ref(columnref* prev, char* column_name, char* table_name) 
         predicate: null
         join: null
   }
-
   ```
+  total heap usage: 11 allocs, 9 frees, 18,592 bytes allocated
+
+
 - SELECT со сложным предикатом
   ```
   stmt > SELECT x, y FROM z WHERE a == 10 AND 4 != b OR c ~ 'str' AND (d >= 3.14 OR e == 'example');
@@ -383,6 +398,8 @@ columnref* new_column_ref(columnref* prev, char* column_name, char* table_name) 
         join: null
   }  
   ```
+  total heap usage: 37 allocs, 35 frees, 19,390 bytes allocated
+
 
 - SELECT с предикатом и JOIN по сложному условию
 
@@ -444,6 +461,8 @@ columnref* new_column_ref(columnref* prev, char* column_name, char* table_name) 
         }
   }
   ```
+  total heap usage: 33 allocs, 31 frees, 19,020 bytes allocated
+
 
 - CREATE TABLE
 
@@ -473,8 +492,11 @@ columnref* new_column_ref(columnref* prev, char* column_name, char* table_name) 
         ]
   }
   ```
+
+  total heap usage: 13 allocs, 11 frees, 18,619 bytes allocated
+
   
-- INSERT (bad tabs)
+- INSERT
 
   ```
   stmt > INSERT INTO tablename (X, Y, Z, T) VALUES (-5, 'str', TRUE, 3.14);
@@ -520,3 +542,57 @@ columnref* new_column_ref(columnref* prev, char* column_name, char* table_name) 
         ]
   }
   ```
+
+  total heap usage: 24 allocs, 22 frees, 18,776 bytes allocated
+
+Стоит заметить, что во всех случаях аллокаций на 2 больше, чем освобождений.
+Это не протёкшая память, а 'still reachable' структуры самого Flex'а на момент завершения программы
+
+```
+==7808== 56 bytes in 1 blocks are still reachable in loss record 1 of 2
+==7808==    at 0x4848899: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==7808==    by 0x10D0A6: yy_flex_alloc (lex.yy.c:1812)
+==7808==    by 0x10CC7C: yy_create_buffer (lex.yy.c:1483)
+==7808==    by 0x10BC57: yylex (lex.yy.c:672)
+==7808==    by 0x10AD56: yyparse (sql.tab.c:1373)
+==7808==    by 0x10BBC1: main (sql.y:184)
+==7808== 
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:yy_flex_alloc
+   fun:yy_create_buffer
+   fun:yylex
+   fun:yyparse
+   fun:main
+}
+==7808== 16,386 bytes in 1 blocks are still reachable in loss record 2 of 2
+==7808==    at 0x4848899: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==7808==    by 0x10D0A6: yy_flex_alloc (lex.yy.c:1812)
+==7808==    by 0x10CCB1: yy_create_buffer (lex.yy.c:1492)
+==7808==    by 0x10BC57: yylex (lex.yy.c:672)
+==7808==    by 0x10AD56: yyparse (sql.tab.c:1373)
+==7808==    by 0x10BBC1: main (sql.y:184)
+==7808== 
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:yy_flex_alloc
+   fun:yy_create_buffer
+   fun:yylex
+   fun:yyparse
+   fun:main
+}
+
+```
+
+## Выводы
+
+В ходе выполнения задания были изучены инструменты для лексического и синтаксического анализа: Flex и Bison.
+С их помощью удалось построить парсер запросов на языке SQL и разобрать запрос в синтаксическое дерево.
+Инструменты легки в освоении и использовании, необходимый минимум - понимание определения грамматики языка, 
+базовое знание регулярных выражений и базовое знание языка Си
